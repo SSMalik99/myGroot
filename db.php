@@ -2,7 +2,7 @@
     class dbConnection{
         private $serverName="localhost";  #  this is hostName
         private $userName="root";    # this the user name for the database
-        private $userPass="";    #this is the password for the user database  
+        private $userPass="root";    #this is the password for the user database  
         private $dbName="usermanagement";    #this is the official name of our database
         public $con = FALSE;
         #this method will try to connect database for the different purposes;
@@ -38,8 +38,8 @@
     class createDataQuery extends queryClasses{#this class will generate queries for the different tasks;
         public $tableName = 'workmate';
         //this method will add new user into our database
-        public function addUserQuery($name,$email,$password,$valid){
-            $this->myQuery="INSERT INTO `$this->tableName` (`userName`, `userEmail`, `userPassword`,`valid`) VALUES ('$name', '$email','$password','$valid');";
+        public function addUserQuery($name,$email,$password,$roleId,$valid){
+            $this->myQuery="INSERT INTO `$this->tableName` (`userName`, `userEmail`, `userPassword`,`roleId`,`valid`) VALUES ('$name', '$email','$password',$roleId,'$valid');";
             return $this->myQuery;
         }
         #select any user on the basis of userId
@@ -53,12 +53,12 @@
         }
         #this method will help end user and admin to change the info the users;
         public function updateInfoQuery($userId,$name,$email,$userRole,$valid){
-            $this->myQuery= "UPDATE `usermanagement`.`workmate` SET `userName`='$name', `userEmail`='$email', `userRole`='$userRole', `valid`='$valid' WHERE  `userId`=$userId;";
+            $this->myQuery= "UPDATE `usermanagement`.`workmate` SET `userName`='$name', `userEmail`='$email', `roleId`=$userRole, `valid`='$valid' WHERE  `userId`=$userId;";
             return $this->myQuery;
         }
         #this method will help tp change the password of the users;
         public function updatePassword($userId,$userPassword){
-            $this->myQuery="UPDATE `$this->tableName` SET `userPassword` = '$userPassword' WHERE `workmate`.`userId` = $userId;";
+            $this->myQuery="UPDATE `$this->tableName` SET `userPassword` = '$userPassword' WHERE `$this->tableName`.`userId` = $userId;";
         }
         #this method will help tp change the Profile Image of the users;
         public function updateProfileImage($userId,$profilePhoto){
@@ -102,8 +102,8 @@
             return $this->myQuery;
         }
         #this method will help end user and admin to change the info the users;
-        public function updateTask($taskId,$taskTitle,$taskDisc){
-            $this->myQuery= "UPDATE `usermanagement`.`$this->tableName` SET `taskTitle`='$taskTitle', `taskDisc`='$taskDisc' WHERE  `taskId`=$taskId;";
+        public function updateTask($taskId,$taskTitle,$taskDisc,$catId){
+            $this->myQuery= "UPDATE `usermanagement`.`$this->tableName` SET `taskTitle`='$taskTitle', `taskDisc`='$taskDisc', `categoryId`='$catId' WHERE  `taskId`='$taskId';";
             return $this->myQuery;
         }
         #this will delete an end user from the database
@@ -138,18 +138,24 @@
 
         public function addNewTaskCategory($catName){
             #method to add new task category
-            $this->myQuery="INSERT INTO `$this->tableName` (`categoryName`) VALUES ('$catName');";
+            $this->myQuery="INSERT INTO `usermanagement`.`$this->tableName` (`categoryName`) VALUES ('$catName');";
             return $this->myQuery;
         }
 
         public function DeleteTaskCategory($catId){
             #method to delete any task category
-            $this->myQuery="DELETE FROM $this->tableName WHERE $this->tableName.`categoryId`=$catId";
+            $this->myQuery="DELETE FROM $this->tableName WHERE $this->tableName.`categoryId`='$catId';";
             return $this->myQuery;
         }
         public function selectWithTaskId($catId){
-            #method to select role with perticular role id;
-            $this->myQuery="SELECT * FROM $this->tableName WHERE $this->tableName.`categoryId`=$catId";
+            #method to select category with perticular category id;
+            $this->myQuery="SELECT * FROM $this->tableName WHERE $this->tableName.`categoryId`='$catId';";
+            return $this->myQuery;
+        }
+
+        public function selectWithCatName($catName){
+            #method to select category id with perticular categoryName;
+            $this->myQuery="SELECT * FROM `$this->tableName` WHERE `$this->tableName`.`categoryName`='$catName';";
             return $this->myQuery;
         }
 
@@ -164,12 +170,17 @@
         }
         public function DeleteRoleCategory($roleId){
             #method to delete any role catagory 
-            $this->myQuery="DELETE FROM $this->tableName WHERE $this->tableName.`roleId`=$roleId";
+            $this->myQuery="DELETE FROM `$this->tableName` WHERE `$this->tableName`.`roleId`='$roleId';";
             return $this->myQuery;
         }
         public function selectWithRoleId($roleId){
             #method to select role with perticular role id;
-            $this->myQuery="SELECT * FROM $this->tableName WHERE $this->tableName.`roleId`=$roleId";
+            $this->myQuery="SELECT * FROM `$this->tableName` WHERE `$this->tableName`.`roleId`='$roleId';";
+            return $this->myQuery;
+        }
+        public function selectWithRoleName($roleName){
+            #method to select category id with perticular categoryName;
+            $this->myQuery="SELECT * FROM `$this->tableName` WHERE `$this->tableName`.`roleCatgory`='$roleName';";
             return $this->myQuery;
         }
     }

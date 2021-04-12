@@ -6,6 +6,7 @@
         $categoryIdList=$_POST['categoryList'];
         $dbObj=new dbConnection();
         $taskQueryObj=new createTaskQuery();
+        $failed=true;
         foreach ($categoryIdList as $value) {
             $dbObj->connectDb();
             $taskQueryObj->addTaskQuery($userId,$taskTitle,$taskDisc,$value);
@@ -16,11 +17,16 @@
                     some Technical issue is occurring! please try again.
                 </div>
             <?php    break; 
-            else: ?>
-                <div class="alert alert-success">
+            else:
+                $failed=false;
+            ?>
+
+<?php  endif;  } ?>
+<?php     if(!$failed): ?>
+            <div class="alert alert-success">
                 Task is added SuccssFully
-                </div>
-<?php  endif;  }
-        
-    endif;
+            </div>
+    <?php endif; ?>
+
+<?php    endif;
 ?>

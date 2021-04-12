@@ -19,6 +19,18 @@
                 return $this->makeChange;
             }
         }
+        public static function makeTaskCompleted($taskId){
+            $dbObj=new dbConnection();
+            $userTaskObj=new createTaskQuery();
+            $dbObj->connectDb();
+            $userTaskObj->completeTask($taskId);
+            $result=mysqli_query($dbObj->con,$userTaskObj->myQuery);
+            $success=FALSE;
+            if($result){
+                $success=TRUE;
+            }
+            return $success;
+        }
         public static function anyUserInformation($incomingUserId){
             $userId=$incomingUserId;
             $dbObj=new dbConnection();
@@ -65,6 +77,32 @@
             $userTasks->selectTaskWithUserId($userId);
             $userTasksResult=mysqli_query($dbObj->con,$userTasks->myQuery);
             return $userTasksResult;
+        }
+        public static function deleteAnyTask($taskId){
+            #This method will delete any specific task by using its taskId
+            $dbObj=new dbConnection();
+            $queryObj=new createTaskQuery();
+            $dbObj->connectDb();
+            $queryObj->deleteTask($taskId);
+            $result=userChange::handleAnyQuery($dbObj->con,$queryObj->myQuery);
+            $dbObj->dissconnectDb();
+            $success=FALSE;
+            if($result){
+                $success=TRUE;
+            }
+            return $success;
+        }
+        public static function reAssigningTask($taskId){
+            $dbObj=new dbConnection();
+            $queryObj=new createTaskQuery();
+            $dbObj->connectDb();
+            $queryObj->reassignTask($taskId);
+            $result=userChange::handleAnyQuery($dbObj->con,$queryObj->myQuery);
+            $success=FALSE;
+            if($result){
+                $success=TRUE;
+            }
+            return $success;
         }
 
     }
