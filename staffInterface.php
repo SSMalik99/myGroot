@@ -101,7 +101,6 @@
         <?php
         if(isset($_GET['myDetail'])):
             $userDetail=userChange::anyUserInformation($_SESSION['userId']);
-            $userRole=userChange::anyuserRole($userDetail['roleId'])
         ?>
         <div class="container">
             <div class="card mb-3" style="max-width: 540px;">
@@ -113,7 +112,7 @@
                         <div class="card-body">
                             <h5 class="card-title"><?php echo ucwords($userDetail['userName']); ?></h5>
                             <p class="card-text"><?php echo ucwords($userDetail['userName']); ?> Your Email : <?php echo $userDetail['userEmail']; ?></p>
-                            <p class="card-text"><small class="text-muted">You are working with us on the profile: <h3><?php echo ucfirst($userRole['roleCategory']); ?> </h3></small></p>
+                            <p class="card-text"><small class="text-muted">You are working with us on the profile: <h3><?php echo ucfirst($userDetail['roleCategory']); ?> </h3></small></p>
                         </div> 
                     </div>
                     <div style="text-align: center; display:inline-block" class="col-md-12 mb-3">
@@ -152,7 +151,7 @@
 
         <?php    while($userTaskRow=$userTasks->fetch_assoc()):
                     if($userTaskRow['taskCompleted']=='no'):
-                    $userTaskCategory=userChange::anyTaskCategory($userTaskRow['categoryId']); 
+                    $userTaskCategory=userChange::taskAllValue($userTaskRow['taskId']); 
                     $srNo+=1;
         ?>
                     <tr>
@@ -162,7 +161,7 @@
                         <td><?php echo $userTaskRow['taskDisc']; ?></td>
                         <td><?php echo $userTaskCategory['categoryName']; ?></td>
                         <td>
-                            <a class="btn btn-sm secondary" href="staffInterface.php?editTask=<?php echo $userTaskRow['taskId'];  ?>">Edit</a>
+                            <a class="btn btn-sm btn-secondary" href="staffInterface.php?editTask=<?php echo $userTaskRow['taskId'];  ?>">Edit</a>
                             <a class="btn btn-sm btn-success" href="staffInterface.php?makeComplete=<?php echo $userTaskRow['taskId'];  ?>">Add To Complete</a>
                         </td>
                     </tr>
@@ -226,13 +225,7 @@
             if(isset($_GET['editTask'])): 
                 include('editTask.php');
                 $taskId=$_GET['editTask'];
-                $dbObj=new dbConnection();
-                $taskQueryObj=new createTaskQuery();
-                $dbObj->connectDb();
-                $taskQueryObj->selectTaskWithCond($_GET['editTask']);
-                $taskResult=mysqli_query($dbObj->con,$taskQueryObj->myQuery);
-                $taskResultRow=$taskResult->fetch_assoc();
-                $taskCategory=userChange::anyTaskCategory($taskResultRow['categoryId']);
+                $taskResultRow=userChange::taskAllValue($taskId);
                 // var_dump($taskCategory['categoryId']);
         ?>
             <div><!-- this div is for the EDITING of the task -->
@@ -251,7 +244,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Update Category</label>
-                        <input type="text" name="taskCategory" class="form-control" id="taskCategory" value="<?php echo $taskCategory['categoryName']; ?>">
+                        <input type="text" name="taskCategory" class="form-control" id="taskCategory" value="<?php echo $taskResultRow['categoryName']; ?>">
                     </div>
                     <button type="submit" name='editThisTask' class="btn btn-primary">Submit</button>
                 </div>
@@ -303,7 +296,7 @@
 
         <?php    while($userTaskRow=$userTasks->fetch_assoc()):
                     if($userTaskRow['taskCompleted']=='yes'):
-                    $userTaskCategory=userChange::anyTaskCategory($userTaskRow['categoryId']); 
+                    $userTaskCategory=userChange::taskAllValue($userTaskRow['categoryId']); 
                     $srNo+=1;
         ?>
                     <tr>
@@ -326,35 +319,10 @@
     <div class="container">
         <?php
             if(isset($_GET['editMyInfo'])):
-                include('editUser.php');
                 $userId=$_SESSION['userId'];
                 $userInfo=userChange::anyUserInformation($userId);
-                $userRole=userChange::anyuserRole($userInfo['roleId']);
+                include('editUser.php');
         ?>
-            <div>
-                    <form action="" method="POST" class="container">
-                    <div class="form-row">
-                            <input type="hidden" class="form-control" id="userId" value="<?php echo $userId ?>" name="userId" placeholder="User Id">
-                        <div class="form-group col-md-6">
-                            <label for="userName">User Name</label>
-                            <input type="text" class="form-control" id="userName" name="userName" value="<?php echo $userInfo['userName']; ?>" placeholder="Name">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="userEmail">Email</label>
-                            <input type="email" class="form-control" id="userEmail" name="userEmail" value="<?php echo $userInfo['userEmail']; ?>" placeholder="Email">
-                        </div>
-                        <div class="form-group col-md-6">
-                            
-                            <input type="hidden"  class="form-control" id="userRole" value="<?php echo $userRole['roleId']; ?>" name="userRole" placeholder="user Role">
-                        </div>
-                        <div class="form-group col-md-6">
-                            
-                            <input type="hidden" class="form-control" id="userValid" value="<?php echo $userInfo['valid']; ?>" name="userValid" placeholder="user Role">
-                        </div>
-                    </div>
-                    <button type="submit" name="updateInfo" class="btn btn-primary">Update</button>
-                </form>
-                </div>
         <?php  endif; ?>
     </div>
 
@@ -362,22 +330,9 @@
     <div class="container">
         <?php
             if(isset($_GET['editMyPassword'])):
+                $userId=$_SESSION['userId'];
                 include('editPassword.php');
         ?>
-        <div>
-            <form action="" method="POST">
-                <div class="form-group">
-                    <input type="hidden" class="form-control" value="<?php echo $_SESSION['userId']; ?>" id="updatingPassword" name="updatingPassword">
-                        <label for="enterUpdatePassword">Enter Password</label>
-                        <input type="password" class="form-control" id="enterUpdatePassword" name="enterUpdatePassword"  placeholder="Enter Password">
-                </div>
-                <div class="form-group">
-                    <label for="confirmEnterUpdatePassword">Confirm Password</label>
-                    <input type="password" class="form-control" name="confirmEnterUpdatePassword" id="confirmEnterUpdatePassword" placeholder=" confirm Password">
-                </div>
-                <button name="submitUpdatePassword" class="btn btn-primary">Submit</button>
-            </form>
-        </div>
         <?php endif; ?>
     </div>
 

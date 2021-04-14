@@ -2,7 +2,7 @@
     class dbConnection{
         private $serverName="localhost";  #  this is hostName
         private $userName="root";    # this the user name for the database
-        private $userPass="root";    #this is the password for the user database  
+        private $userPass="";    #this is the password for the user database  
         private $dbName="usermanagement";    #this is the official name of our database
         public $con = FALSE;
         #this method will try to connect database for the different purposes;
@@ -32,11 +32,33 @@
             $this->myQuery="SELECT * FROM $this->tableName";
             return $this->myQuery;
         }
+        public function userCompleteInformation($userId){
+            $this->myQuery="SELECT *
+            FROM workmate
+            JOIN rolecategories ON workmate.roleId= rolecategories.roleId 
+            WHERE workmate.userId=$userId;";
+            return $this->myQuery;
+        }
+        public function taskCompleteInfo($taskId){
+            $this->myQuery="SELECT *
+            FROM usertask 
+            JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId
+            JOIN workmate ON usertask.userId=workmate.userId
+            JOIN rolecategories on workmate.roleId=rolecategories.roleId
+            WHERE usertask.taskId=$taskId;";
+            return $this->myQuery;
+        }
 
     }
 
     class createDataQuery extends queryClasses{#this class will generate queries for the different tasks;
         public $tableName = 'workmate';
+
+        public function selectAllData(){
+            //This will select all the Information of the seleted table
+            $this->myQuery="SELECT * FROM $this->tableName JOIN roleCategories ON $this->tableName.roleId=rolecategories.roleId;";
+            return $this->myQuery;
+        }
         //this method will add new user into our database
         public function addUserQuery($name,$email,$password,$roleId,$valid){
             $this->myQuery="INSERT INTO `$this->tableName` (`userName`, `userEmail`, `userPassword`,`roleId`,`valid`) VALUES ('$name', '$email','$password',$roleId,'$valid');";
@@ -53,7 +75,7 @@
         }
         #this method will help end user and admin to change the info the users;
         public function updateInfoQuery($userId,$name,$email,$userRole,$valid){
-            $this->myQuery= "UPDATE `usermanagement`.`workmate` SET `userName`='$name', `userEmail`='$email', `roleId`=$userRole, `valid`='$valid' WHERE  `userId`=$userId;";
+            $this->myQuery= "UPDATE `usermanagement`.`workmate` SET `userName`='$name', `userEmail`='$email', `roleId`=$userRole, `valid`='$valid' WHERE  `userId`='$userId';";
             return $this->myQuery;
         }
         #this method will help tp change the password of the users;
@@ -87,6 +109,10 @@
     #This class is for the creation of the query for the "usertask" table 
     class createTaskQuery extends queryClasses{
         public $tableName = 'usertask';
+        public function selectAllTaskId(){
+            $this->myQuery="SELECT taskId FROM $this->tableName";
+            return $this->myQuery;
+        }
         public function addTaskQuery($userId,$taskTitle,$taskDisc,$categoryId){
             $this->myQuery="INSERT INTO `usermanagement`.`$this->tableName` (`userId`, `taskTitle`, `taskDisc`,`categoryId`) VALUES ('$userId', '$taskTitle', '$taskDisc', '$categoryId');";
             // echo "i'm working Buddy";
@@ -180,7 +206,7 @@
         }
         public function selectWithRoleName($roleName){
             #method to select category id with perticular categoryName;
-            $this->myQuery="SELECT * FROM `$this->tableName` WHERE `$this->tableName`.`roleCatgory`='$roleName';";
+            $this->myQuery="SELECT * FROM `$this->tableName` WHERE `$this->tableName`.`roleCategory`='$roleName';";
             return $this->myQuery;
         }
     }

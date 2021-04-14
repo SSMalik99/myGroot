@@ -36,37 +36,23 @@
             $dbObj=new dbConnection();
             $userDataObj=new createDataQuery();
             $dbObj->connectDb();
-            $userDataObj->selectWithCond($userId);
+            $userDataObj->userCompleteInformation($userId);
             $dataResult=mysqli_query($dbObj->con,$userDataObj->myQuery);
             $userDataRow=$dataResult->fetch_assoc();
             $dbObj->dissconnectDb();
             // var_dump($userDataRow);
             return $userDataRow;
         }
-        public static function anyuserRole($incomingRoleId){
-            #method to get the role of the user by using roleId and this will return a fetched row
-            $roleId=$incomingRoleId;
-            $dbObj=new dbConnection();
-            $roleObj=new UserRoleQuery();
-            $dbObj->connectDb();
-            $roleObj->selectWithRoleId($roleId);
-            $roleResult=mysqli_query($dbObj->con,$roleObj->myQuery);
-            $dbObj->dissconnectDb();
-            $roleResultRow=$roleResult->fetch_assoc();
-            return $roleResultRow;
-
-        }
-        public static function anyTaskCategory($incomingTaskId){
-            #method to get the task category of the task by using task categoryId and this will return a fetched row
+        public static function taskAllValue($incomingTaskId){
+            #method to show all the task related to userId
             $taskId=$incomingTaskId;
             $dbObj=new dbConnection();
-            $taskCategoryObj=new taskCategoryQuery();
+            $taskObj=new createTaskQuery();
             $dbObj->connectDb();
-            $taskCategoryObj->selectWithTaskId($taskId);
-            $taskCategoryResult=mysqli_query($dbObj->con,$taskCategoryObj->myQuery);
-            $dbObj->dissconnectDb();
-            $taskCatergoryResultRow=$taskCategoryResult->fetch_assoc();
-            return $taskCatergoryResultRow;
+            $taskObj->taskCompleteInfo($taskId);
+            $taskValueResult=mysqli_query($dbObj->con,$taskObj->myQuery);
+            $taskValueRow=$taskValueResult->fetch_assoc();
+            return $taskValueRow;
         }
         public static function userAllTask($incomingUserId){
             #method to show all the task related to userId

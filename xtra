@@ -1,0 +1,13 @@
+SELECT usertask.taskId,usertask.taskTitle,usertask.taskDisc,usertask.taskCompleted,taskcategories.categoryName,workmate.userName 
+FROM usertask 
+JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId
+JOIN workmate ON usertask.userId=workmate.userId
+WHERE usertask.taskId=10;
+
+
+SELECT usertask.taskId,usertask.taskTitle,usertask.taskDisc,usertask.taskCompleted,taskcategories.categoryName,usertask.userId,workmate.userId,workmate.userName,rolecategories.roleCategory
+FROM usertask 
+JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId
+JOIN workmate ON usertask.userId=workmate.userId
+JOIN rolecategories on workmate.roleId=rolecategories.roleId
+WHERE usertask.taskId=5;
