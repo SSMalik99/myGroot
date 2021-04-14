@@ -58,10 +58,9 @@
             #method to show all the task related to userId
             $userId=$incomingUserId;
             $dbObj=new dbConnection();
-            $userTasks=new createTaskQuery();
             $dbObj->connectDb();
-            $userTasks->selectTaskWithUserId($userId);
-            $userTasksResult=mysqli_query($dbObj->con,$userTasks->myQuery);
+            $query="SELECT * FROM usertask  JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId JOIN workmate ON usertask.userId=workmate.userId JOIN rolecategories on workmate.roleId=rolecategories.roleId WHERE usertask.userId=$userId;";
+            $userTasksResult=mysqli_query($dbObj->con,$query);
             return $userTasksResult;
         }
         public static function deleteAnyTask($taskId){

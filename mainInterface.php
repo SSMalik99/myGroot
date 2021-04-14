@@ -244,19 +244,34 @@ function anyUserInfomation($userId)
         <!-- below div we will use to filter the tasks -->
         <?php
         if (isset($_GET['myTask'])) :
-            $userTasks = userChange::userAllTask($_SESSION['userId']);
+            $userId=$_SESSION['userId'];
+            if(isset($_POST['filterTask'])){
+                $dbObj=new dbConnection();
+                $dbObj->connectDb();
+                $filterRoleId=$_POST['filterRole'];
+                $filterTaskCategoryId=$_POST['filterTaskCategory'];
+                if(empty($filterRoleId)){
+                    $query="SELECT * FROM usertask  JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId JOIN workmate ON usertask.userId=workmate.userId JOIN rolecategories on workmate.roleId=rolecategories.roleId WHERE usertask.userId=$userId AND usertask.categoryId=$filterTaskCategoryId;";
+                    $userTasks=mysqli_query($dbObj->con,$query);
+                }elseif(empty($filterTaskCategoryId)){
+                    $query="SELECT * FROM usertask  JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId JOIN workmate ON usertask.userId=workmate.userId JOIN rolecategories on workmate.roleId=rolecategories.roleId WHERE usertask.userId=$userId AND workMate.roleId=$filterRoleId;";
+                    $userTasks=mysqli_query($dbObj->con,$query);
+                }else{
+                    $query="SELECT * FROM usertask  
+                    JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId 
+                    JOIN workmate ON usertask.userId=workmate.userId 
+                    JOIN rolecategories on workmate.roleId=rolecategories.roleId 
+                    WHERE usertask.userId=$userId AND usertask.categoryId=$filterTaskCategoryId AND workMate.roleId=$filterRoleId;";
+                    $userTasks=mysqli_query($dbObj->con,$query);
+                }
+            }else{
+                $userTasks = userChange::userAllTask($userId);
+            }
             $srNo = 0;
+            
         ?>
             <div class="col-md-2 mt-2">
                 <?php
-                if(isset($_POST['filterTask'])):
-                    $dbObj=new dbConnection();
-                    $dbObj->connectDb();
-                    $filterRole=$_POST['filterRole'];
-                    $filterTaskCategory=$_POST['filterTaskCategory'];
-                    $allTask=filterValueFun($dbObj,$filterRole,$filterTaskCategory);
-                    $allRole = userChange::handleAnyQuery($dbObj->con, $roleCategoryObj->myQuery);
-                else:
                 $dbObj = new dbConnection();
                 $taskCategoryObj = new taskCategoryQuery();
                 $roleCategoryObj = new UserRoleQuery();
@@ -271,8 +286,9 @@ function anyUserInfomation($userId)
                     <form action="" method="POST" class="form">
                         <label class="form-label fw-bold" style="margin-left: 5%;">Filter</label>
                         <div class="form-group" style="display: none;">
+                            <label>SELECT User ROle</label>
                             <select name="filterRole" id="filterRole" class="form-select">
-                                <option value="">SELECT USER ROLE</option>
+                                
                                 <?php
                                 while ($roleRow = $allRole->fetch_assoc()) :
                                 ?>
@@ -281,8 +297,9 @@ function anyUserInfomation($userId)
                             </select>
                         </div>
                         <div>
+                            <label class="fw-bold">Select Task Category</label>
                             <select name="filterTaskCategory" id="filterTaskCategory" class="form-select mt-3">
-                                <option value="">Select Task Category</option>
+                                
                                 <?php
                                 while ($taskRow = $allTask->fetch_assoc()) :
                                 ?>
@@ -311,7 +328,7 @@ function anyUserInfomation($userId)
 
                         <?php while ($userTaskRow = $userTasks->fetch_assoc()) :
                             if ($userTaskRow['taskCompleted'] == 'no') :
-                                $userTaskCategory = userChange::taskAllValue($userTaskRow['categoryId']);
+                                // $userTaskCategory = userChange::taskAllValue($userTaskRow['categoryId']);
                                 $srNo += 1;
                         ?>
                                 <tr>
@@ -319,7 +336,7 @@ function anyUserInfomation($userId)
                                     <td><?php echo $userTaskRow['taskId']; ?></td>
                                     <td><?php echo $userTaskRow['taskTitle']; ?></td>
                                     <td><?php echo $userTaskRow['taskDisc']; ?></td>
-                                    <td><?php echo $userTaskCategory['categoryName']; ?></td>
+                                    <td><?php echo $userTaskRow['categoryName']; ?></td>
                                     <td>
                                         <a class="btn btn-sm btn-info" href="mainInterface.php?editTask=<?php echo $userTaskRow['taskId'];  ?>">Edit</a>
                                         <a class="btn btn-sm btn-success" href="mainInterface.php?makeComplete=<?php echo $userTaskRow['taskId'];  ?>">Add To Complete</a>
@@ -328,31 +345,43 @@ function anyUserInfomation($userId)
                                 </tr>
                     <?php endif;
                         endwhile;
-                    endif; ?>
+                     endif; ?>
 
                     </tbody>
                 </table>
             </div>
-        <?php endif; ?>
     </div>
-
-    
-    <?php
-        if(isset($_GET['filterTable'])){
-            $table=$_SESSION['filteredTable'];
-            while($row=$table->fetch_assoc()):
-                echo "i'm working";
-            endwhile;
-        }
-    ?>
-
 
     <!-- SECTION TO SHOW CURRENT Completed TASK -->
     <div class="row">
         <?php
         if (isset($_GET['myCompletedTask'])) :
-            $userTasks = userChange::userAllTask($_SESSION['userId']);
+            $userId=$_SESSION['userId'];
+            $dbObj=new dbConnection();
+            $dbObj->connectDb();
+            if(isset($_POST['filterTask'])){
+                $filterRoleId=$_POST['filterRole'];
+                $filterTaskCategoryId=$_POST['filterTaskCategory'];
+                if(empty($filterRoleId)){
+                    $query="SELECT * FROM usertask  JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId JOIN workmate ON usertask.userId=workmate.userId JOIN rolecategories on workmate.roleId=rolecategories.roleId WHERE usertask.userId=$userId AND usertask.categoryId=$filterTaskCategoryId AND usertask.taskCompleted='yes';";
+                    $userTasks=mysqli_query($dbObj->con,$query);
+                }elseif(empty($filterTaskCategoryId)){
+                    $query="SELECT * FROM usertask  JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId JOIN workmate ON usertask.userId=workmate.userId JOIN rolecategories on workmate.roleId=rolecategories.roleId WHERE usertask.userId=$userId AND workMate.roleId=$filterRoleId AND usertask.taskCompleted='yes';";
+                    $userTasks=mysqli_query($dbObj->con,$query);
+                }else{
+                    $query="SELECT * FROM usertask  
+                    JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId 
+                    JOIN workmate ON usertask.userId=workmate.userId 
+                    JOIN rolecategories on workmate.roleId=rolecategories.roleId 
+                    WHERE usertask.userId=$userId AND usertask.categoryId=$filterTaskCategoryId AND workMate.roleId=$filterRoleId AND usertask.taskCompleted='yes';";
+                    $userTasks=mysqli_query($dbObj->con,$query);
+                }
+            }else{
+                $query="SELECT * FROM usertask  JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId JOIN workmate ON usertask.userId=workmate.userId JOIN rolecategories on workmate.roleId=rolecategories.roleId WHERE usertask.userId=$userId AND usertask.taskCompleted='yes';";
+                $userTasks=mysqli_query($dbObj->con,$query);
+            }
             $srNo = 0;
+            
         ?>
             <div class="col-md-2 mt-2">
                 <?php
@@ -366,11 +395,11 @@ function anyUserInfomation($userId)
                 $allRole = userChange::handleAnyQuery($dbObj->con, $roleCategoryObj->myQuery);
                 ?>
                 <div>
-                    <form action="filteredValues.php" method="POST" class="form">
+                    <form action="" method="POST" class="form">
                         <label class="form-label fw-bold" style="margin-left: 5%;">Filter</label>
                         <div class="form-group" style="display: none;">
+                            <label class="fw-bold">Select User Role</label>
                             <select name="filterRole" id="filterRole" class="form-select">
-                                <option value="">SELECT USER ROLE</option>
                                 <?php
                                 while ($roleRow = $allRole->fetch_assoc()) :
                                 ?>
@@ -379,8 +408,8 @@ function anyUserInfomation($userId)
                             </select>
                         </div>
                         <div>
+                            <label class="fw-bold">Select Task Category</label>
                             <select class="form-select mt-3" name="filterTaskCategory" id="filterTaskCategory">
-                                <option value="">Select Task Category</option>
                                 <?php
                                 while ($taskRow = $allTask->fetch_assoc()) :
                                 ?>
@@ -407,8 +436,6 @@ function anyUserInfomation($userId)
                     <tbody>
 
                         <?php while ($userTaskRow = $userTasks->fetch_assoc()) :
-                            if ($userTaskRow['taskCompleted'] == 'yes') :
-                                $userTaskCategory = userChange::taskAllValue($userTaskRow['categoryId']);
                                 $srNo += 1;
                         ?>
                                 <tr>
@@ -416,13 +443,13 @@ function anyUserInfomation($userId)
                                     <td><?php echo $userTaskRow['taskId']; ?></td>
                                     <td><?php echo $userTaskRow['taskTitle']; ?></td>
                                     <td><?php echo $userTaskRow['taskDisc']; ?></td>
-                                    <td><?php echo $userTaskCategory['categoryName']; ?></td>
+                                    <td><?php echo $userTaskRow['categoryName']; ?></td>
                                     <td>
                                         <a class="btn btn-sm btn-primary" href="mainInterface.php?reassignTask=<?php echo $userTaskRow['taskId'];  ?>">Reassign Task</a>
                                         <a class="btn btn-sm btn-danger" href="mainInterface.php?deleteTask=<?php echo $userTaskRow['taskId'];  ?>" onclick="return confirmDelete()">Delete</a>
                                     </td>
                                 </tr>
-                    <?php endif;
+                    <?php
                         endwhile;
                     endif; ?>
 
@@ -556,15 +583,50 @@ function anyUserInfomation($userId)
 
         <?php
         if (isset($_GET['otherUsersTask'])) :
-            $taskResult = usersAllTasks();
+            $dbObj=new dbConnection();
+            $dbObj->connectDb();
+            if(isset($_POST['filterTask'])){
+                $filterRoleId=$_POST['filterRole'];
+                $filterTaskCategoryId=$_POST['filterTaskCategory'];
+                if(empty($filterRoleId)){
+                    $query="SELECT * FROM usertask 
+                    JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId 
+                    JOIN workmate ON usertask.userId=workmate.userId 
+                    JOIN rolecategories on workmate.roleId=rolecategories.roleId 
+                    WHERE usertask.categoryId=$filterTaskCategoryId AND usertask.taskCompleted='no';";
+                    $taskResult=mysqli_query($dbObj->con,$query);
+                }elseif(empty($filterTaskCategoryId)){
+                    $query="SELECT * FROM usertask 
+                    JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId 
+                    JOIN workmate ON usertask.userId=workmate.userId 
+                    JOIN rolecategories on workmate.roleId=rolecategories.roleId 
+                    WHERE workMate.roleId=$filterRoleId AND usertask.taskCompleted='no';";
+                    $taskResult=mysqli_query($dbObj->con,$query);
+                }else{
+                    $query="SELECT * FROM usertask  
+                    JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId 
+                    JOIN workmate ON usertask.userId=workmate.userId 
+                    JOIN rolecategories on workmate.roleId=rolecategories.roleId 
+                    WHERE usertask.categoryId=$filterTaskCategoryId AND workMate.roleId=$filterRoleId AND usertask.taskCompleted='no';";
+                    $taskResult=mysqli_query($dbObj->con,$query);
+                }
+            }else{
+                $query="SELECT * FROM usertask  
+                JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId 
+                JOIN workmate ON usertask.userId=workmate.userId 
+                JOIN rolecategories on workmate.roleId=rolecategories.roleId
+                WHERE usertask.taskCompleted='no';";
+                $taskResult=mysqli_query($dbObj->con,$query);
+            }
             $srNo = 0;
+            
         ?>
             <div class="col-md-2 mt-2">
                 <?php
                 include('filterForm.php');
                 ?>
                 <div>
-                    <form action="filteredValues.php" method="POST" class="form">
+                    <form action="" method="POST" class="form">
                         <label class="form-label fw-bold" style="margin-left: 5%;">Filter</label>
                         <div class="form-group">
                             <select name="filterRole" id="filterRole" class="form-select">
@@ -609,20 +671,18 @@ function anyUserInfomation($userId)
                     <tbody>
 
                         <?php while ($taskResultRow = $taskResult->fetch_assoc()) :
-                            if ($taskResultRow['taskCompleted'] == 'no' && $taskResultRow['userId'] != $_SESSION['userId']) :
-                                $userTaskCategory = userChange::taskAllValue($taskResultRow['categoryId']);
-                                $userInfoRow = userChange::anyUserInformation($taskResultRow['userId']);
+                            if ($taskResultRow['userId'] != $_SESSION['userId']) :
                                 $srNo += 1;
                         ?>
                                 <tr>
                                     <td><?php echo $srNo; ?></td>
                                     <td><?php echo $taskResultRow['taskId']; ?></td>
                                     <td><?php echo $taskResultRow['userId']; ?></td>
-                                    <td><?php echo ucwords($userInfoRow['userName']); ?></td>
+                                    <td><?php echo ucwords($taskResultRow['userName']); ?></td>
                                     <td><?php echo ucwords($taskResultRow['taskTitle']); ?></td>
                                     <td><?php echo ucfirst($taskResultRow['taskDisc']); ?></td>
-                                    <td><?php echo ucwords($userTaskCategory['categoryName']); ?></td>
-                                    <td><?php echo ucfirst($userInfoRow['roleCategory']); ?></td>
+                                    <td><?php echo ucwords($taskResultRow['categoryName']); ?></td>
+                                    <td><?php echo ucfirst($taskResultRow['roleCategory']); ?></td>
                                     <td>
                                         <a class="btn btn-sm btn-info" href="mainInterface.php?editTask=<?php echo $taskResultRow['taskId'];  ?>">Edit</a>
                                         <a class="btn btn-sm btn-success" href="mainInterface.php?makeComplete=<?php echo $taskResultRow['taskId'];  ?>">Add To Complete</a>
@@ -644,7 +704,41 @@ function anyUserInfomation($userId)
 
         <?php
         if (isset($_GET['otherUsersCompletedTask'])) :
-            $taskResult = usersAllTasks();
+            $dbObj=new dbConnection();
+            $dbObj->connectDb();
+            if(isset($_POST['filterTask'])){
+                $filterRoleId=$_POST['filterRole'];
+                $filterTaskCategoryId=$_POST['filterTaskCategory'];
+                if(empty($filterRoleId)){
+                    $query="SELECT * FROM usertask 
+                    JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId 
+                    JOIN workmate ON usertask.userId=workmate.userId 
+                    JOIN rolecategories on workmate.roleId=rolecategories.roleId 
+                    WHERE usertask.categoryId=$filterTaskCategoryId AND usertask.taskCompleted='yes';";
+                    $taskResult=mysqli_query($dbObj->con,$query);
+                }elseif(empty($filterTaskCategoryId)){
+                    $query="SELECT * FROM usertask 
+                    JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId 
+                    JOIN workmate ON usertask.userId=workmate.userId 
+                    JOIN rolecategories on workmate.roleId=rolecategories.roleId 
+                    WHERE workMate.roleId=$filterRoleId AND usertask.taskCompleted='yes';";
+                    $taskResult=mysqli_query($dbObj->con,$query);
+                }else{
+                    $query="SELECT * FROM usertask  
+                    JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId 
+                    JOIN workmate ON usertask.userId=workmate.userId 
+                    JOIN rolecategories on workmate.roleId=rolecategories.roleId 
+                    WHERE usertask.categoryId=$filterTaskCategoryId AND workMate.roleId=$filterRoleId AND usertask.taskCompleted='yes';";
+                    $taskResult=mysqli_query($dbObj->con,$query);
+                }
+            }else{
+                $query="SELECT * FROM usertask  
+                JOIN taskcategories ON usertask.categoryId=taskcategories.categoryId 
+                JOIN workmate ON usertask.userId=workmate.userId 
+                JOIN rolecategories on workmate.roleId=rolecategories.roleId
+                WHERE usertask.taskCompleted='yes';";
+                $taskResult=mysqli_query($dbObj->con,$query);
+            }
             $srNo = 0;
         ?>
             <div class="col-md-2 mt-2">
@@ -652,7 +746,7 @@ function anyUserInfomation($userId)
                 include('filterForm.php');
                 ?>
                 <div>
-                    <form action="filteredValues.php" method="POST" class="form">
+                    <form action="" method="POST" class="form">
                         <label class="form-label fw-bold" style="margin-left: 5%;">Filter</label>
                         <div class="form-group">
                             <select name="filterRole" id="filterRole" class="form-select">
@@ -697,19 +791,17 @@ function anyUserInfomation($userId)
 
                         <?php
                         while ($taskResultRow = $taskResult->fetch_assoc()) :
-                            if ($taskResultRow['taskCompleted'] == 'yes' && $taskResultRow['userId'] != $_SESSION['userId']) :
-                                $userTaskCategory = userChange::taskAllValue($taskResultRow['categoryId']);
-                                $userInfoRow = anyUserInfomation($taskResultRow['userId']);
+                            if ($taskResultRow['userId'] != $_SESSION['userId']) :
                                 $srNo += 1;
                         ?>
                                 <tr>
                                     <td><?php echo $srNo; ?></td>
                                     <td><?php echo $taskResultRow['taskId']; ?></td>
                                     <td><?php echo $taskResultRow['userId']; ?></td>
-                                    <td><?php echo ucwords($userInfoRow['userName']); ?></td>
+                                    <td><?php echo ucwords($taskResultRow['userName']); ?></td>
                                     <td><?php echo ucwords($taskResultRow['taskTitle']); ?></td>
                                     <td><?php echo ucfirst($taskResultRow['taskDisc']); ?></td>
-                                    <td><?php echo ucwords($userTaskCategory['categoryName']); ?></td>
+                                    <td><?php echo ucwords($taskResultRow['categoryName']); ?></td>
                                     <td>
                                         <a class="btn btn-sm btn-warning fw-bold" href="mainInterface.php?reassignTask=<?php echo $taskResultRow['taskId'];  ?>">Reassign Task</a>
                                         <a class="btn btn-sm btn-danger" href="mainInterface.php?deleteTask=<?php echo $taskResultRow['taskId'];  ?>" onclick="return confirmDelete()">Delete</a>
@@ -819,12 +911,26 @@ function anyUserInfomation($userId)
 
         <?php
         if (isset($_GET['showAllUsers'])) :
-            $dbObj = new dbConnection();
-            $userDataObj = new createDataQuery();
+            $dbObj=new dbConnection();
             $dbObj->connectDb();
-            $userDataObj->selectAllData();
-            $result = userChange::handleAnyQuery($dbObj->con, $userDataObj->myQuery);
+            if(isset($_POST['filterTask'])){
+                $filterRoleId=$_POST['filterRole'];
+                $filterTaskCategoryId=$_POST['filterTaskCategory'];
+                if(empty($filterRoleId)){
+                    $query="SELECT * FROM workmate JOIN rolecategories on workmate.roleId=rolecategories.roleId;";
+                    $result=mysqli_query($dbObj->con,$query);
+                }else{
+                    $query="SELECT * FROM workmate 
+                    JOIN rolecategories on workmate.roleId=rolecategories.roleId 
+                    WHERE workMate.roleId=$filterRoleId;";
+                    $result=mysqli_query($dbObj->con,$query);
+                }
+            }else{
+                $query="SELECT * FROM workmate JOIN rolecategories on workmate.roleId=rolecategories.roleId;";
+                $result=mysqli_query($dbObj->con,$query);
+            }
             $srNo = 0;
+            
         ?>
             <div class="col-md-2 mt-2">
                 <?php
@@ -839,7 +945,7 @@ function anyUserInfomation($userId)
                 ?>
 
                 <div>
-                    <form action="filteredValues.php" method="POST" class="form">
+                    <form action="" method="POST" class="form">
                         <label class="form-label fw-bold" style="margin-left: 5%;">Filter</label>
                         <div class="form-group">
                             <select name="filterRole" id="filterRole" class="form-select">
@@ -952,6 +1058,29 @@ function anyUserInfomation($userId)
                 </form>
             </div>
         <?php endif; ?>
+    </div>
+
+    <!-- SECTION TO DELETE ANY USER -->
+    <div class="container">
+        <?php
+            if(isset($_GET['deleteUser'])):
+                $userId=$_GET['deleteUser'];
+                $dbObj=new dbConnection();
+                $queryObj=new createDataQuery();
+                // $userObj=new userChange();
+                $dbObj->connectDb();
+                $queryObj->deleteQuery($userId);
+                $result=userChange::handleAnyQuery($dbObj->con,$queryObj->myQuery);
+                $dbObj->dissconnectDb();
+                if($result): ?>
+                <div class="alert alert-warning" role="alert">
+                    user is DELETED successfully!
+                </div>
+            <?php else: ?>
+                    <div class="alert alert-danger" role="alert">
+                        We are unable to do this task!
+                    </div>
+            <?php endif; endif; ?>
     </div>
 
     <!-- JAVASCRIPT PART  -->
